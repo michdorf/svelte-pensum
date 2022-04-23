@@ -1,2 +1,12 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script lang="ts">
+    import CompitiLista from "../comps/compiti-lista.svelte";
+    import type Compito from "src/interfacci/compito";
+    import Compiti from '../servizi/compiti';
+
+    function agg(compito: CustomEvent<Compito>) {
+        Compiti.agg(compito.detail);
+    }
+</script>
+<CompitiLista compiti={Compiti.data} on:agg={agg}></CompitiLista>
+<h1>Læste sider</h1>
+<button>Tilføj læsning</button>
