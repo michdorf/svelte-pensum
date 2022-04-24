@@ -1,3 +1,12 @@
+/**
+* HELT FORKERT! Du skal slette class Salvabile
+* og i stedet ligge al funktionalitet med at gemme
+* i SalvabileServizio, som enhver klasse så kan extende
+* direkte.
+* pt. Fungerer det ikke med at Salvabile .subscribe'er
+* til den anden service, fordi den kun kører callback
+* en gang ved .subscribe
+*/
 import { writable, type Writable } from "svelte/store";
 
 export class SalvabileServizio {
