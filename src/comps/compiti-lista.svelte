@@ -11,7 +11,7 @@ function agg() {
         lezione: {materia: 'Gynækologi', data: new Date()},
         da: 2,
         a: 10,
-        libro: {autore: "Michele Dorph", id: 1, titolo: "Tester"},
+        libro: {autore: "Michele Dorph", id: 1, titolo: "Tester", creato: new Date()},
         data: new Date()
     };
     dispatch('agg', compito);

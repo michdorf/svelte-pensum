@@ -1,28 +1,42 @@
+import type { CompitoSalvabile } from '../interfacci/compito';
 import type Compito from '../interfacci/compito';
-import {get, writable, type Writable} from 'svelte/store';
-import salvabile, { SalvabileServizio } from "./salvabile";
+import Salvabile, { type SalvabileServizio } from './salvabile';
 
-class Compiti extends SalvabileServizio {
-    data = writable<Compito[]>([]);
-
+class Compiti extends Salvabile implements SalvabileServizio{
     constructor() {
-        super();
-        const t = salvabile.registra('compiti', this);
-        if (t !== null) {
-            this.data = t as Writable<Compito[]>;
-        }
+        super('compiti');
     }
 
-    esporta(): any {
-        const c = get(this.data);
-        return c.map((compito: any) => {
-            compito.data = compito.data.getTime();
-            return compito;
+    esporta(compiti: Compito[]): CompitoSalvabile[] {
+        return compiti.map((compito: Compito) => {
+            return Object.assign(compito, {
+                data: compito.data.getTime(),
+                lezione: {
+                    data: compito.lezione.data.getTime()
+                },
+                libro: {
+                    creato: compito.libro.creato.getTime()
+                }
+            });
+        });
+    }
+
+    importa(data: CompitoSalvabile[]): Compito[] {
+        return data.map((compito: CompitoSalvabile) => {
+            return Object.assign(compito, {
+                data: new Date(compito.data),
+                lezione: {
+                    data: new Date(compito.lezione.data)
+                },
+                libro: {
+                    creato: new Date(compito.libro.creato)
+                }
+            });
         });
     }
 
     agg(compito: Compito) {
-        this.data.update((compiti) => [compito, ...compiti]);
+        super.agg(compito);
     }
 }
 

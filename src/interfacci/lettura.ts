@@ -1,3 +1,4 @@
+import type { LibroSalvabile } from "./libro";
 import type Libro from "./libro";
 
 /**
@@ -8,4 +9,11 @@ export default interface Lettura {
     da: number;
     a: number;
     data: Date;
+}
+
+export interface LetturaSalvabile {
+    libro: LibroSalvabile;
+    da: number;
+    a: number;
+    data: number;
 }

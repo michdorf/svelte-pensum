@@ -7,53 +7,68 @@
 * til den anden service, fordi den kun kører callback
 * en gang ved .subscribe
 */
-import { writable, type Writable } from "svelte/store";
+import { get, writable, type Writable } from "svelte/store";
 
-export class SalvabileServizio {
-    data: Writable<unknown> = writable<unknown>();
-
-    esporta(): unknown {
-        console.error("You must implement esporta in class " + this.constructor.name);
-        return;
-    }
+export interface SalvabileServizio {
+    /* data: Writable<unknown>; */ /* Should be controlled by Salvabile (parent class) */
+    zona: string;
+    esporta(data: unknown): unknown;
+    importa(data: unknown): unknown;
 }
 
+let _statoGlobale: {[key: string]: string} = {};
 class Salvabile {
     private storageKey = "pensum";
-    private servizi: Array<[string, SalvabileServizio]> = [];
-    private stato: {[key: string]: unknown} = {};
+    private staIniziando = true;
+    zona: string;
+    private data: Writable<any[]>;
 
-    constructor() {
-        if (typeof window !== 'undefined') {
-            const contenuto = localStorage.getItem(this.storageKey);
-            this.stato = contenuto ? JSON.parse(contenuto) : {};
-        }
-    }
-    
-    registra(zona: string, servizio: SalvabileServizio) {
-        if (typeof window === 'undefined') {
-            return null;
-        }
-        this.servizi.push([zona, servizio]);
-        servizio.data.subscribe(valore => {
-            console.log("Update", valore);
-            this.stato[zona] = valore;
+    constructor(zona: string) {
+        this.staIniziando = true;
+        this.zona = zona;
+        this.data = this.carica();
+
+        this.data.subscribe(_ => {
             this.salva();
         });
-        const t = this.stato;
-        return t ? writable<unknown>(t[zona]) : null;
+    }
+
+    carica(): Writable<unknown[]> {
+        if (typeof localStorage === 'undefined') {
+            return writable([]);
+        }
+        _statoGlobale = JSON.parse(localStorage.getItem(this.storageKey) || '{}');
+        const data = this.importa(JSON.parse(this.zona in _statoGlobale ? _statoGlobale[this.zona] : '[]'));
+        console.log('Caricato ', data);
+        return writable(data);
+    }
+
+    agg(riga: unknown) {
+        this.data.update((righe) => [riga, ...righe]);
     }
 
     salva() {
         if (typeof window === 'undefined') {
             return;
         }
-        const o: {[key: string]: string} = {};
-        for (let i = 0; i < this.servizi.length; i++) {
-            o[this.servizi[i][0]] = JSON.stringify(this.servizi[i][1].esporta());
+        if (this.staIniziando) {
+            this.staIniziando = false;
+            return;
         }
-        localStorage.setItem(this.storageKey, JSON.stringify(o));
+        _statoGlobale[this.zona] = JSON.stringify(this.esporta(get(this.data)));
+        console.log('Salvato ', _statoGlobale);
+        localStorage.setItem(this.storageKey, JSON.stringify(_statoGlobale));
+    }
+
+    importa(data: unknown[]) {
+        console.error("You must implement importa in class " + this.constructor.name);
+        return data;
+    }
+
+    esporta(data: unknown[]) {
+        console.error("You must implement esporta in class " + this.constructor.name);
+        return data;
     }
 }
 
-export default new Salvabile();
+export default Salvabile;
