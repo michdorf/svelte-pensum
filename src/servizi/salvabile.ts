@@ -21,14 +21,18 @@ class Salvabile {
     private storageKey = "pensum";
     private staIniziando = true;
     zona: string;
-    private data: Writable<any[]>;
+    private _data: Writable<any[]>;
+
+    get data() {
+        return this._data;
+    }
 
     constructor(zona: string) {
         this.staIniziando = true;
         this.zona = zona;
-        this.data = this.carica();
+        this._data = this.carica();
 
-        this.data.subscribe(_ => {
+        this._data.subscribe(_ => {
             this.salva();
         });
     }
@@ -44,7 +48,7 @@ class Salvabile {
     }
 
     agg(riga: unknown) {
-        this.data.update((righe) => [riga, ...righe]);
+        this._data.update((righe) => [riga, ...righe]);
     }
 
     salva() {
@@ -55,7 +59,7 @@ class Salvabile {
             this.staIniziando = false;
             return;
         }
-        _statoGlobale[this.zona] = JSON.stringify(this.esporta(get(this.data)));
+        _statoGlobale[this.zona] = JSON.stringify(this.esporta(get(this._data)));
         console.log('Salvato ', _statoGlobale);
         localStorage.setItem(this.storageKey, JSON.stringify(_statoGlobale));
     }
